@@ -14,7 +14,7 @@
 
             try {
                 // 查询颜色列表
-                const response = await fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:3000/getColors?productCode=${productCode}`);
+                const response = await fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:5000/getColors?productCode=${productCode}`);
                 const data = await response.json();
 
                 if (data.colors) {
