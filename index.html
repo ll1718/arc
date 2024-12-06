@@ -1,94 +1,53 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>查询商品颜色与库存</title>
-    <style>
-        ul {
-            list-style-type: none;
-        }
-        li {
-            cursor: pointer;
-            padding: 5px;
-            margin: 5px 0;
-        }
-        li:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
-</head>
-<body>
-    <h1>查询商品颜色与库存</h1>
-
-    <label for="productCode">请输入货号:</label>
-    <input type="text" id="productCode" placeholder="请输入商品货号">
-    <button onclick="getColors()">查询颜色</button>
-
-    <h3>商品颜色</h3>
-    <ul id="colorList"></ul>
-
-    <h3>库存信息</h3>
-    <div id="stockInfo"></div>
-
+    <title>查询商品颜色</title>
     <script>
-        async function getColors() {
-            const productCode = document.getElementById('productCode').value;
+        function fetchColors() {
+            // 获取输入的货号
+            var productCode = document.getElementById("productCode").value;
+
             if (!productCode) {
-                alert('请输入货号');
+                alert("请输入货号");
                 return;
             }
 
-            try {
-                // 查询颜色列表
-                const response = await fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:5000/getColors?productCode=${productCode}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+            // 发起 GET 请求获取颜色数据
+            fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:5000/getColors?productCode=${productCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.colors) {
+                        var colorList = document.getElementById("colorList");
+                        colorList.innerHTML = ''; // 清空颜色列表
+
+                        // 显示颜色选项
+                        data.colors.forEach(color => {
+                            var li = document.createElement("li");
+                            li.textContent = color;
+                            colorList.appendChild(li);
+                        });
+                    } else {
+                        alert(data.error);
                     }
+                })
+                .catch(error => {
+                    alert("请求失败，请稍后再试。");
+                    console.error(error);
                 });
-                const data = await response.json();
-
-                if (data.colors) {
-                    // 显示颜色列表
-                    const colorList = document.getElementById('colorList');
-                    colorList.innerHTML = ''; // 清空之前的颜色
-                    data.colors.forEach(color => {
-                        const li = document.createElement('li');
-                        li.textContent = color;
-                        li.onclick = function() {
-                            getStockInfo(productCode, color);  // 用户点击颜色时查询库存
-                        };
-                        colorList.appendChild(li);
-                    });
-                } else {
-                    alert(data.error);
-                }
-            } catch (error) {
-                console.error("Error fetching colors:", error);
-            }
-        }
-
-        async function getStockInfo(productCode, color) {
-            try {
-                // 查询库存信息
-                const response = await fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:5000/getStockInfo?productCode=${productCode}&color=${encodeURIComponent(color)}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const data = await response.json();
-
-                if (data.stock) {
-                    document.getElementById('stockInfo').textContent = `库存: ${data.stock}`;
-                } else {
-                    document.getElementById('stockInfo').textContent = data.error || '未找到库存信息';
-                }
-            } catch (error) {
-                console.error("Error fetching stock info:", error);
-            }
         }
     </script>
+</head>
+<body>
+    <h1>商品颜色查询</h1>
+    <label for="productCode">请输入货号:</label>
+    <input type="text" id="productCode" placeholder="例如: 684052">
+    <button onclick="fetchColors()">查询颜色</button>
+
+    <h2>商品颜色:</h2>
+    <ul id="colorList">
+        <!-- 颜色选项将显示在这里 -->
+    </ul>
 </body>
 </html>
