@@ -68,6 +68,39 @@
                 alert('请求失败，请稍后再试');
             }
         }
+
+        async function fetchStoreAvailability() {
+            const productCode = document.getElementById('productCode').value;
+            const color = document.getElementById('colorSelect').value;
+            const size = document.getElementById('sizeInput').value;
+
+            if (!size) {
+                alert('请输入尺码');
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:3000/getStoreAvailability?productCode=${productCode}&color=${encodeURIComponent(color)}&size=${size}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    const storeDetails = document.getElementById('storeDetails');
+                    storeDetails.innerHTML = ''; // 清空旧的库存信息
+
+                    data.storeData.forEach(detail => {
+                        const p = document.createElement('p');
+                        p.textContent = `尺码 ${detail.size} - 店铺: ${detail.storeName}`;
+                        storeDetails.appendChild(p);
+                    });
+
+                    document.getElementById('storeSection').style.display = 'block';
+                }
+            } catch (error) {
+                alert('请求失败，请稍后再试');
+            }
+        }
     </script>
 </head>
 <body>
@@ -87,6 +120,16 @@
     <div id="stockSection" style="display:none; margin-top: 20px;">
         <h2>库存详情：</h2>
         <div id="stockDetails"></div>
+        <div>
+            <label for="sizeInput">尺码：</label>
+            <input type="text" id="sizeInput" placeholder="请输入尺码">
+            <button onclick="fetchStoreAvailability()">查询实体店库存</button>
+        </div>
+    </div>
+
+    <div id="storeSection" style="display:none; margin-top: 20px;">
+        <h2>实体店库存详情：</h2>
+        <div id="storeDetails"></div>
     </div>
 </body>
 </html>
