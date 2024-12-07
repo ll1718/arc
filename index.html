@@ -1,53 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>查询商品颜色</title>
+    <title>商品颜色和库存查询</title>
     <script>
-        function fetchColors() {
-            // 获取输入的货号
-            var productCode = document.getElementById("productCode").value;
+        async function fetchColors() {
+            const productCode = document.getElementById('productCode').value;
 
             if (!productCode) {
-                alert("请输入货号");
+                alert('请输入货号');
                 return;
             }
 
-            // 发起 GET 请求获取颜色数据
-            fetch(`https://d2a31470-e26d-423d-b1c9-7acbe4512978-00-1jqe9zok3obzl.sisko.replit.dev:5000/getColors?productCode=${productCode}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.colors) {
-                        var colorList = document.getElementById("colorList");
-                        colorList.innerHTML = ''; // 清空颜色列表
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/getColors?productCode=${productCode}`);
+                const data = await response.json();
 
-                        // 显示颜色选项
-                        data.colors.forEach(color => {
-                            var li = document.createElement("li");
-                            li.textContent = color;
-                            colorList.appendChild(li);
-                        });
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    alert("请求失败，请稍后再试。");
-                    console.error(error);
-                });
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    const colorSelect = document.getElementById('colorSelect');
+                    colorSelect.innerHTML = ''; // 清空旧的颜色选项
+
+                    data.colors.forEach(color => {
+                        const option = document.createElement('option');
+                        option.value = color;
+                        option.textContent = color;
+                        colorSelect.appendChild(option);
+                    });
+
+                    document.getElementById('colorSection').style.display = 'block';
+                }
+            } catch (error) {
+                alert('请求失败，请稍后再试');
+            }
+        }
+
+        async function fetchStock() {
+            const productCode = document.getElementById('productCode').value;
+            const color = document.getElementById('colorSelect').value;
+
+            if (!color) {
+                alert('请选择颜色');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/getStock?productCode=${productCode}&color=${encodeURIComponent(color)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('stockDetails').textContent = JSON.stringify(data.stock, null, 2);
+                    document.getElementById('stockSection').style.display = 'block';
+                }
+            } catch (error) {
+                alert('请求失败，请稍后再试');
+            }
         }
     </script>
 </head>
 <body>
-    <h1>商品颜色查询</h1>
-    <label for="productCode">请输入货号:</label>
-    <input type="text" id="productCode" placeholder="例如: 684052">
-    <button onclick="fetchColors()">查询颜色</button>
+    <h1>商品颜色和库存查询</h1>
+    <div>
+        <label for="productCode">货号：</label>
+        <input type="text" id="productCode" placeholder="请输入货号">
+        <button onclick="fetchColors()">查询颜色</button>
+    </div>
 
-    <h2>商品颜色:</h2>
-    <ul id="colorList">
-        <!-- 颜色选项将显示在这里 -->
-    </ul>
+    <div id="colorSection" style="display:none; margin-top: 20px;">
+        <label for="colorSelect">颜色：</label>
+        <select id="colorSelect"></select>
+        <button onclick="fetchStock()">查询库存</button>
+    </div>
+
+    <div id="stockSection" style="display:none; margin-top: 20px;">
+        <h2>库存详情：</h2>
+        <pre id="stockDetails"></pre>
+    </div>
 </body>
 </html>
