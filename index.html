@@ -53,7 +53,15 @@
                 if (data.error) {
                     alert(data.error);
                 } else {
-                    document.getElementById('stockDetails').textContent = JSON.stringify(data.stock, null, 2);
+                    const stockDetails = document.getElementById('stockDetails');
+                    stockDetails.innerHTML = ''; // 清空旧的库存信息
+
+                    data.stockDetails.forEach(detail => {
+                        const p = document.createElement('p');
+                        p.textContent = detail;
+                        stockDetails.appendChild(p);
+                    });
+
                     document.getElementById('stockSection').style.display = 'block';
                 }
             } catch (error) {
@@ -78,7 +86,7 @@
 
     <div id="stockSection" style="display:none; margin-top: 20px;">
         <h2>库存详情：</h2>
-        <pre id="stockDetails"></pre>
+        <div id="stockDetails"></div>
     </div>
 </body>
 </html>
